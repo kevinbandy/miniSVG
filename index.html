@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG Minifier!</title>
+    <style type="text/css">
+        .active {
+            opacity: 1 !important;
+        }
+        body {
+            background: #f2f2f2;
+            padding: 46px 55px;
+
+            font-family: 'Verdana-Bold', 'Verdana Bold', 'Verdana';
+            font-weight: 700;
+            font-style: normal;
+        }
+        header {
+            color: #FFFFFF;
+            display: flex;
+            width: 100%;
+        }
+        header svg {
+            width: 150px;
+            height: 40px;
+            margin-top: 4px;
+            margin-right: 80px;
+        }
+
+        header .progress-bar {
+            display: flex;
+            flex-grow: 1;
+            opacity: 0;
+            transition: 300ms ease-in;
+        }
+
+        header .progress-bar .progress-bar-completed {
+            background-color: #39f;
+            border: 4px solid #0cf;
+            padding: 10px;
+            transition: 1500ms ease-in-out;
+        }
+        header .progress-bar .progress-bar-uncomplete {
+            background-color: #ccc;
+            height: 38px;
+            flex-grow: 1;
+            margin-top: 5px;
+        }
+        .section-titles {
+            display: flex;
+            width: 100%;
+        }
+        .section-titles .half {
+            width: 50%;
+            flex-grow: 1;
+            display: flex;
+            padding: 0 5px 0 8px;
+        }
+        .section-titles .arrow {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #ccc;
+            margin: 29px 0 0 10px;
+        }
+        .section-titles .half ~ .half h5 {
+            color: #09c;
+        }
+        .preview-pair {
+            width: 100%;
+            display: flex;
+        }
+        .preview-pane {
+            flex: 1;
+            width: 50%;
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 5px;
+        }
+        .preview-pane + .preview-pane {
+            opacity: 0.1;
+            transition: 600ms ease-in;
+        }
+        .preview-pane > div {
+            width: 100%;
+            height: 236px;
+            margin: 0 auto;
+            border-top: 3px solid #999;
+            background-color: #fff;
+            text-align: left;
+        }
+        .preview-pane > div svg {
+            position: relative;
+            max-width: 80%;
+            max-height: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+        .preview-pane > div + div {
+            width: calc(100% - 6px);
+            border-right: 3px solid #ccc;
+            border-bottom: 3px solid #ccc;
+            border-left: 3px solid #ccc;
+            height: inherit;
+        }
+        .preview-pane pre, textarea {
+            overflow-x: auto;
+            overflow-y: scroll;
+            background-color: #fafafa;
+            margin: 40px;
+            text-align: left;
+            height: 250px;
+            color: #888;
+            padding: 5px;
+            font-weight: 100;
+            border: none;
+        }
+        .preview-pane label {
+            margin: 0px 10px 0 20px;
+            display: inline-block;
+            line-height: 80px;
+        }
+        textarea {
+            width: calc(100% - 26px);
+            margin-left: 10px;
+            height: 250px;
+        }
+        button {
+            margin: 20px;
+            padding: 10px 20px;
+            width: 200px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            transition: 300ms ease-in-out;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #ccc;
+            color: white;
+        }
+        button:focus{
+            outline:none !important;
+        }
+        #btnSubmitOriginal, #btnRemoveStuff {
+            float: right;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var $original = $("#originalPreview");
+            var $minified = $("#minifiedPreview");
+            var originalFile = '';
+            var removedStuff = [];
+            var $svg;
+
+            $("#btnSubmitTest").click(function submitTest() {
+var testInput = `<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.4.4 (17249) - http://www.bohemiancoding.com/sketch -->
+    <title>Rectangle 259</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <path d="M16,14 L16,11.9970301 C16,11.4530363 15.5522847,11 15,11 C14.4438648,11 14,11.4463856 14,11.9970301 L14,14 L11.9970301,14 C11.4530363,14 11,14.4477153 11,15 C11,15.5561352 11.4463856,16 11.9970301,16 L14,16 L14,18.0029699 C14,18.5469637 14.4477153,19 15,19 C15.5561352,19 16,18.5536144 16,18.0029699 L16,16 L18.0029699,16 C18.5469637,16 19,15.5522847 19,15 C19,14.4438648 18.5536144,14 18.0029699,14 L16,14 L16,14 Z M0,6.99580545 C0,3.13212879 3.12562706,0 6.99580545,0 L23.0041946,0 C26.8678712,0 30,3.12562706 30,6.99580545 L30,23.0041946 C30,26.8678712 26.8743729,30 23.0041946,30 L6.99580545,30 C3.13212879,30 0,26.8743729 0,23.0041946 L0,6.99580545 L0,6.99580545 Z M1,7.00670248 C1,3.6892923 3.68475771,1 7.00670248,1 L22.9932975,1 C26.3107077,1 29,3.68475771 29,7.00670248 L29,22.9932975 C29,26.3107077 26.3152423,29 22.9932975,29 L7.00670248,29 C3.6892923,29 1,26.3152423 1,22.9932975 L1,7.00670248 L1,7.00670248 Z M9.9947834,6 L20.0052166,6 C22.2114745,6 24,7.79171562 24,9.9947834 L24,20.0052166 C24,22.2114745 22.2082844,24 20.0052166,24 L9.9947834,24 C7.78852545,24 6,22.2082844 6,20.0052166 L6,9.9947834 C6,7.78852545 7.79171562,6 9.9947834,6 Z" id="Rectangle-259" fill="#FF7676" sketch:type="MSShapeGroup"></path>
+    </g>
+</svg>`;
+                $('#originalFile').val(testInput);
+                //setFile(testInput);
+            });
+            $("#btnSubmitOriginal").click(function submitOriginal() {
+                var fileContentsInput = $('#originalFile').val();
+                setFile(fileContentsInput);
+            });
+
+            $("#btnRemoveStuff").click(function removeStuff() {
+                var attributesToRemove = ['x', 'y', 'width', 'height', 'xmlns:sketch', 'xmlns:xlink', 'xml:space', 'style'];
+                var childrenToRemove = ['title', 'desc'];
+
+                attributesToRemove.forEach(function removeAttributes(attributeToRemove) {
+                    if ($svg.getAttributeNames().indexOf(attributeToRemove) > -1) {
+                        $svg.removeAttribute(attributeToRemove);
+                        removedStuff.push(attributeToRemove);
+                    }
+                });
+
+                childrenToRemove.forEach(function removeChildren(childToRemove) {
+                    $modifiedSVG = removeChild($svg, childToRemove);
+                });
+
+                var strippedAndModifiedSVG = stripEmptyLines($('<div>').append($modifiedSVG).html());
+
+                var container = $('<div>').append($(strippedAndModifiedSVG));
+
+                $('#minifiedPreview').html(container.html());
+                $('#minifiedCode').text(container.html());
+
+                $('.preview-pane:last-child').addClass('active');
+
+                identifyElements();
+            })
+
+            function setFile(fileContents) {
+                originalFile = fileContents;
+                $original.html(fileContents);
+                $('#originalCode').text(fileContents);
+                $minified.html(fileContents);
+                $('#minifiedCode').text('Hit Minify to see the minified svg!');
+                identifyElements();
+            }
+
+            function identifyElements() {
+                var minifierSummary = $("#minifierSummary");
+
+                var workingXML = $.parseXML(stripComments($minified.html() + ''));
+                var $xml = $(workingXML);
+
+                var numberOfFoundSVGs = $xml.find('svg').length;
+
+                if (numberOfFoundSVGs > 1) {
+                    minifierSummary.html("Found multiple SVGs, let's work with just one at a time.");
+                    return;
+                }
+
+                if (numberOfFoundSVGs < 1 && $xml.nodeName !== 'svg') {
+                    console.warn('wrapper has node type of ' + $xml.nodeName + ' and does not contain an svg as a child', $xml);
+                    minifierSummary.html("No SVG found!");
+                    return;
+                }
+
+                if ($xml.nodeName === 'svg') {
+                    $svg = $xml;
+                } else {
+                    $svg = $xml.find('svg')[0];
+                }
+
+                var outputMessage = '<h4>Found an SVG!</h4>';
+
+                for (var attributeIndex = 0; attributeIndex < $svg.attributes.length; attributeIndex++) {
+                    outputMessage += '<p>' + $svg.attributes[attributeIndex].name + ': ' + $svg.attributes[attributeIndex].nodeValue + '</p>';
+                }
+
+                outputMessage += '<p><b>Removed Items:</b> ' + removedStuff.join(', ') + '</p>';
+
+                outputMessage += '<p><b>Filesize savings:</b> ' + getFilesizeReduction() + '%</p>';
+
+                $('.progress-bar-completed').text(getFilesizeReduction() + '% Reduction').css('width', 'calc(' + (100 - getFilesizeReduction()) + '% - 28px)');
+                $('.progress-bar').addClass('active');
+
+                minifierSummary.html(outputMessage);
+            }
+
+            function getFilesizeReduction() {
+                var sizeOriginal = $original.html().length;
+                var sizeMinified = $minified.html().length;
+                return Math.round((sizeOriginal - sizeMinified) / sizeOriginal * 100);
+            }
+
+            function stripComments(codeOptionallyWithComments) {
+                var codeWithoutComments = codeOptionallyWithComments.replace(/<!--[^>]*-->(\n)?/g, '');
+
+                return codeWithoutComments;
+            }
+
+            function stripEmptyLines(codeOptionallyWithEmptyLines) {
+                var codeWithoutEmptyLines = codeOptionallyWithEmptyLines.replace(/\n[\s]+\n/g, '\n');
+                console.log('stripping:',codeOptionallyWithEmptyLines,codeWithoutEmptyLines)
+                return codeWithoutEmptyLines;
+            }
+
+            function removeChild(elementWithChildren, childName) {
+                var nodeIndexToRemove = null;
+
+                $(elementWithChildren.children).each(function removeEachChild(childNodeIndex) {
+                    if (elementWithChildren.children[childNodeIndex].nodeName === childName) {
+                        nodeIndexToRemove = childNodeIndex;
+                    }
+                });
+
+                if (nodeIndexToRemove !== null) {
+                    elementWithChildren.children[nodeIndexToRemove].remove();
+                }
+
+                return elementWithChildren;
+            }
+        });
+    </script>
+</head>
+<body>
+
+    <header>
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 406.2 103.7">
+            <g id="Layer_1">
+                <g id="XMLID_2_">
+                    <path id="XMLID_70_" fill="#4d4d4d" d="M207.7,75.1l9.1-13.3c4.8,4.8,12.1,8.8,21.3,8.8c5.8,0,9.4-2,9.4-5.3
+                        c0-8.8-37.5-1.5-37.5-27.1c0-11.2,9.4-21.1,26.4-21.1c10.7,0,19.9,3.2,27,9.3l-9.4,12.8c-5.6-4.7-12.8-7-19.4-7
+                        c-5,0-7.2,1.7-7.2,4.6c0,8.2,37.5,2,37.5,26.7c0,13.3-9.9,22.2-27.7,22.2C223.8,85.7,214.4,81.4,207.7,75.1z"/>
+                    <path id="XMLID_53_" fill="#4d4d4d" d="M290.8,84.5l-25-66.4h19.4l16.4,47.9L318,18h19.4l-25,66.4H290.8z"/>
+                    <path id="XMLID_51_" fill="#4d4d4d" d="M336.9,51.3c0-21.1,16.1-34.4,35.9-34.4c14.8,0,23.8,7.9,28.4,16.1l-14.3,7.5
+                        c-2.5-4.4-7.6-8.5-14-8.5c-10.9,0-18.5,8.3-18.5,19.2c0,10.9,7.7,19.2,18.5,19.2c4.9,0,9.9-2,12.2-4v-5.2h-14.9v-15h32.1v26.4
+                        c-7.1,7.9-16.8,12.9-29.4,12.9C353.1,85.7,336.9,72.4,336.9,51.3z"/>
+                    <path id="XMLID_48_" fill="#4d4d4d" d="M64.2,76.3V47.2c0-3.7-1.8-6.4-6.3-6.4c-4.2,0-7.1,2.7-8.6,4.7v30.9H34V47.2
+                        c0-3.7-1.7-6.4-6.2-6.4c-4.2,0-7,2.7-8.6,4.7v30.9H3.9V28.5h15.2v5.8c2.1-2.8,8.2-7,15.7-7c6.9,0,11.6,2.9,13.6,8.5
+                        c2.8-4.2,9-8.5,16.5-8.5c8.8,0,14.4,4.6,14.4,14.4v34.6H64.2z"/>
+                    <path id="XMLID_46_" fill="#4d4d4d" d="M90.6,76.3V28.5h15.2v47.8H90.6z"/>
+                    <path id="XMLID_41_" fill="#4d4d4d" d="M149.3,76.3V48.7c0-5.8-3.1-7.9-7.8-7.9c-4.6,0-7.5,2.5-9.3,4.7v30.9h-15.2V28.5h15.2v5.8
+                        c2.9-3.4,8.5-7,16.6-7c10.8,0,15.7,6.3,15.7,15.1v33.9H149.3z"/>
+                    <path id="XMLID_38_" fill="#4d4d4d" d="M175.6,76.3V28.5h15.2v47.8H175.6z"/>
+                    <g id="XMLID_19_">
+                        <g id="XMLID_31_">
+                            <path id="XMLID_32_" fill="#3fa9f5" d="M102.2,4.7v10.2h-7.9V4.7H102.2 M105.8,1H90.6v17.5h15.2V1L105.8,1z"/>
+                        </g>
+                        <path id="XMLID_23_" fill="#3fa9f5" d="M187.2,4.7v10.2h-7.9V4.7H187.2 M190.9,1h-15.2v17.5h15.2V1L190.9,1z"/>
+                        <g id="XMLID_20_">
+                            <rect id="XMLID_22_" x="116.6" y="8.3" fill="#3fa9f5" width="47" height="4"/>
+                        </g>
+                    </g>
+                    <g id="XMLID_3_">
+                        <g id="XMLID_13_">
+                            <path id="XMLID_27_" fill="#3fa9f5" d="M102.2,88.8V99h-7.9V88.8H102.2 M105.8,85.2H90.6v17.5h15.2V85.2L105.8,85.2z"/>
+                        </g>
+                        <g id="XMLID_6_">
+                            <path id="XMLID_17_" fill="#00addc" d="M187.2,88.8V99h-7.9V88.8H187.2 M190.9,85.2h-15.2v17.5h15.2V85.2L190.9,85.2z"/>
+                        </g>
+                        <g id="XMLID_4_">
+                            <rect id="XMLID_5_" x="116.6" y="92.3" fill="#00addc" width="47" height="4"/>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </svg>
+
+        <div class="progress-bar">
+            <div class="progress-bar-completed"></div>
+            <div class="progress-bar-uncomplete"></div>
+        </div>
+    </header>
+
+    <div class="section-titles">
+        <div class="half">
+            <h5>Source SVG</h5>
+            <div class="arrow"></div>
+        </div>
+        <div class="half">
+            <h5>miniSVG</h5>
+        </div>
+    </div>
+
+    <div class="preview-pair">
+
+        <div class="preview-pane">
+            <div id="originalPreview">
+            </div>
+            <div>
+            
+                <label for="originalFile">SVG Data</label>
+                <button id="btnRemoveStuff">Minify!</button>
+                <textarea
+                    id="originalFile"
+                    name="originalFile"></textarea>
+                <button id="btnSubmitOriginal">Set SVG</button> <button id="btnSubmitTest">Test</button>
+
+                <!--pre id="originalCode">
+                </pre-->
+            </div>
+        </div>
+
+        <div class="preview-pane">
+            <div id="minifiedPreview">
+            </div>
+            <div>
+                <pre id="minifiedCode">
+                </pre>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="minifierSummary"></div>
+
+</body>
+</html>
