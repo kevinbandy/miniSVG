@@ -1,0 +1,2 @@
+# miniSVG
+an SVG minifier
